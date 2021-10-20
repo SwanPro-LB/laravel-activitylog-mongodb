@@ -87,7 +87,7 @@ If you've found a security issue please mail [freek@spatie.be](mailto:freek@spat
 You can install the package via composer:
 
 ``` bash
-composer require mostafamaklad/laravel-activitylog-mongodb
+composer require SwanPro-LB/laravel-activitylog-mongodb
 ```
 
 The package will automatically register itself.
