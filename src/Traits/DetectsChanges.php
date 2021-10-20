@@ -13,7 +13,7 @@ trait DetectsChanges
     protected static function bootDetectsChanges()
     {
         if (static::eventsToBeRecorded()->contains('updated')) {
-            static::updating(function (Model $model) {
+            static::updating(function (Object $model) {
 
                 //temporary hold the original attributes on the model
                 //as we'll need these in the updating event
@@ -127,7 +127,7 @@ trait DetectsChanges
         return $properties;
     }
 
-    public static function logChanges(Model $model): array
+    public static function logChanges(Object $model): array
     {
         $changes = [];
         $attributes = $model->attributesToBeLogged();

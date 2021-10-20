@@ -20,7 +20,7 @@ trait LogsActivity
     protected static function bootLogsActivity()
     {
         static::eventsToBeRecorded()->each(function ($eventName) {
-            return static::$eventName(function (Model $model) use ($eventName) {
+            return static::$eventName(function (Object $model) use ($eventName) {
                 if (! $model->shouldLogEvent($eventName)) {
                     return;
                 }

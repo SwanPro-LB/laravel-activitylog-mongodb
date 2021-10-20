@@ -48,7 +48,7 @@ class ActivityLogger
         return $this;
     }
 
-    public function performedOn(Model $model)
+    public function performedOn(Object $model)
     {
         $this->getActivity()->subject()->associate($model);
 
@@ -62,6 +62,7 @@ class ActivityLogger
 
     public function causedBy($modelOrId)
     {
+        return $modelOrId->id;
         if ($modelOrId === null) {
             return $this;
         }
@@ -152,6 +153,10 @@ class ActivityLogger
         }
 
         $activity = $this->activity;
+        $activity->ip_address = request()->ip();
+        $activity->url = request()->path();
+        $activity->activity_group = session()->get('activity_group');
+        $activity->tenancy = session()->get('tenant_id');
 
         $activity->description = $this->replacePlaceholders(
             $activity->description ?? $description,
