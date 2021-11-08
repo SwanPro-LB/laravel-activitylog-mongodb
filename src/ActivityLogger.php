@@ -157,6 +157,8 @@ class ActivityLogger
         $activity->url = request()->path();
         $activity->activity_group = session()->get('activity_group');
         $activity->tenancy = session()->get('tenant_id');
+        $activity->user_id = \Auth::user()->id;
+        $activity->user_name = \Auth::user()->user_name;
 
         $activity->description = $this->replacePlaceholders(
             $activity->description ?? $description,
