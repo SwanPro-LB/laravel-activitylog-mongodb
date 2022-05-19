@@ -2,77 +2,87 @@
 
 namespace Spatie\Activitylog\Test;
 
+use AddBatchUuidColumnToActivityLogTable;
+use AddEventColumnToActivityLogTable;
 use CreateActivityLogTable;
+use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Encryption\Encrypter;
-use Illuminate\Support\Arr;
-use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Schema;
-use Jenssegers\Mongodb\MongodbServiceProvider;
-use Jenssegers\Mongodb\Schema\Blueprint;
-use Orchestra\Testbench\TestCase as Orchestra;
+use Orchestra\Testbench\TestCase as OrchestraTestCase;
 use Spatie\Activitylog\ActivitylogServiceProvider;
 use Spatie\Activitylog\Models\Activity;
 use Spatie\Activitylog\Test\Models\Article;
 use Spatie\Activitylog\Test\Models\User;
 
-abstract class TestCase extends Orchestra
+abstract class TestCase extends OrchestraTestCase
 {
-    public function setUp(): void
+    protected function setUp(): void
     {
-        $this->checkCustomRequirements();
-
         parent::setUp();
 
         $this->setUpDatabase();
     }
 
-    /**
-     * Flush the database after each test function
-     */
-    public function tearDown(): void
-    {
-        Activity::truncate();
-        Article::truncate();
-        User::truncate();
-    }
-
-    protected function checkCustomRequirements()
-    {
-        collect($this->getAnnotations())->filter(function ($location) {
-            return in_array('!Travis', Arr::get($location, 'requires', []));
-        })->each(function ($location) {
-            getenv('TRAVIS') && $this->markTestSkipped('Travis will not run this test.');
-        });
-    }
-
     protected function getPackageProviders($app)
     {
         return [
-            MongodbServiceProvider::class,
             ActivitylogServiceProvider::class,
         ];
     }
 
     public function getEnvironmentSetUp($app)
     {
-        $app['config']->set('database.default', 'mongodb');
-        $app['config']->set('database.connections.mongodb', [
-            'host' => 'localhost',
-            'port' => '27017',
-            'driver' => 'mongodb',
-            'database' => 'laravel_activitylog_mongodb_test',
-            'prefix' => '',
+        config()->set('activitylog.database_connection', 'sqlite');
+        config()->set('database.default', 'sqlite');
+        config()->set('database.connections.sqlite', [
+            'driver' => 'sqlite',
+            'database' => ':memory:',
         ]);
 
-        $app['config']->set('auth.providers.users.model', User::class);
-        $app['config']->set('app.key', 'base64:'.base64_encode(
-            Encrypter::generateKey($app['config']['app.cipher'])
+        config()->set('auth.providers.users.model', User::class);
+        config()->set('app.key', 'base64:'.base64_encode(
+            Encrypter::generateKey(config()['app.cipher'])
         ));
     }
 
     protected function setUpDatabase()
     {
+        $this->migrateActivityLogTable();
+
+        $this->createTables('articles', 'users');
         $this->seedModels(Article::class, User::class);
+    }
+
+    protected function migrateActivityLogTable()
+    {
+        require_once __DIR__.'/../database/migrations/create_activity_log_table.php.stub';
+        require_once __DIR__.'/../database/migrations/add_event_column_to_activity_log_table.php.stub';
+        require_once __DIR__.'/../database/migrations/add_batch_uuid_column_to_activity_log_table.php.stub';
+
+        (new CreateActivityLogTable())->up();
+        (new AddEventColumnToActivityLogTable())->up();
+        (new AddBatchUuidColumnToActivityLogTable())->up();
+    }
+
+    protected function createTables(...$tableNames)
+    {
+        collect($tableNames)->each(function (string $tableName) {
+            Schema::create($tableName, function (Blueprint $table) use ($tableName) {
+                $table->increments('id');
+                $table->string('name')->nullable();
+                $table->string('text')->nullable();
+                $table->timestamps();
+                $table->softDeletes();
+
+                if ($tableName === 'articles') {
+                    $table->integer('user_id')->unsigned()->nullable();
+                    $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
+                    $table->text('json')->nullable();
+                    $table->string('interval')->nullable();
+                    $table->decimal('price')->nullable();
+                }
+            });
+        });
     }
 
     protected function seedModels(...$modelClasses)
@@ -89,15 +99,28 @@ abstract class TestCase extends Orchestra
         return Activity::all()->last();
     }
 
-    public function markTestAsPassed()
+    public function markTestAsPassed(): void
     {
         $this->assertTrue(true);
     }
 
-    public function isLaravel6OrLower(): bool
+    public function createArticle(): Article
     {
-        $majorVersion = (int) substr(App::version(), 0, 1);
+        $article = new $this->article();
+        $article->name = 'my name';
+        $article->save();
 
-        return $majorVersion <= 6;
+        return $article;
+    }
+
+    public function loginWithFakeUser()
+    {
+        $user = new $this->user();
+
+        $user::find(1);
+
+        $this->be($user);
+
+        return $user;
     }
 }

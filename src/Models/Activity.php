@@ -2,13 +2,40 @@
 
 namespace Spatie\Activitylog\Models;
 
-use Illuminate\Support\Arr;
-use Illuminate\Support\Collection;
 use Jenssegers\Mongodb\Eloquent\Builder;
 use Jenssegers\Mongodb\Eloquent\Model;
 use Jenssegers\Mongodb\Relations\MorphTo;
+use Illuminate\Support\Arr;
+use Illuminate\Support\Collection;
 use Spatie\Activitylog\Contracts\Activity as ActivityContract;
 
+/**
+ * Spatie\Activitylog\Models\Activity.
+ *
+ * @property int $id
+ * @property string|null $log_name
+ * @property string $description
+ * @property string|null $subject_type
+ * @property int|null $subject_id
+ * @property string|null $causer_type
+ * @property int|null $causer_id
+ * @property \Illuminate\Support\Collection|null $properties
+ * @property \Carbon\Carbon|null $created_at
+ * @property \Carbon\Carbon|null $updated_at
+ * @property-read Jenssegers\Mongodb\Eloquent\Model|\Eloquent $causer
+ * @property-read \Illuminate\Support\Collection $changes
+ * @property-read Jenssegers\Mongodb\Eloquent\Model|\Eloquent $subject
+ *
+ * @method static \Illuminate\Database\Eloquent\Builder|\Spatie\Activitylog\Models\Activity causedBy(Jenssegers\Mongodb\Eloquent\Model $causer)
+ * @method static \Illuminate\Database\Eloquent\Builder|\Spatie\Activitylog\Models\Activity forBatch(string $batchUuid)
+ * @method static \Illuminate\Database\Eloquent\Builder|\Spatie\Activitylog\Models\Activity forEvent(string $event)
+ * @method static \Illuminate\Database\Eloquent\Builder|\Spatie\Activitylog\Models\Activity forSubject(Jenssegers\Mongodb\Eloquent\Model $subject)
+ * @method static \Illuminate\Database\Eloquent\Builder|\Spatie\Activitylog\Models\Activity hasBatch()
+ * @method static \Illuminate\Database\Eloquent\Builder|\Spatie\Activitylog\Models\Activity inLog($logNames)
+ * @method static \Illuminate\Database\Eloquent\Builder|\Spatie\Activitylog\Models\Activity newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|\Spatie\Activitylog\Models\Activity newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|\Spatie\Activitylog\Models\Activity query()
+ */
 class Activity extends Model implements ActivityContract
 {
     public $guarded = [];
@@ -44,7 +71,7 @@ class Activity extends Model implements ActivityContract
         return $this->morphTo();
     }
 
-    public function getExtraProperty(string $propertyName)
+    public function getExtraProperty(string $propertyName): mixed
     {
         return Arr::get($this->properties->toArray(), $propertyName);
     }
@@ -84,5 +111,20 @@ class Activity extends Model implements ActivityContract
         return $query
             ->where('subject_type', $subject->getMorphClass())
             ->where('subject_id', $subject->getKey());
+    }
+
+    public function scopeForEvent(Builder $query, string $event): Builder
+    {
+        return $query->where('event', $event);
+    }
+
+    public function scopeHasBatch(Builder $query): Builder
+    {
+        return $query->whereNotNull('batch_uuid');
+    }
+
+    public function scopeForBatch(Builder $query, string $batchUuid): Builder
+    {
+        return $query->where('batch_uuid', $batchUuid);
     }
 }

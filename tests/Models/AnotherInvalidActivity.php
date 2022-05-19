@@ -2,11 +2,11 @@
 
 namespace Spatie\Activitylog\Test\Models;
 
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
-use Jenssegers\Mongodb\Eloquent\Builder;
-use Jenssegers\Mongodb\Eloquent\Model;
-use Jenssegers\Mongodb\Relations\MorphTo;
 use Spatie\Activitylog\Contracts\Activity as ActivityContract;
 
 class AnotherInvalidActivity implements ActivityContract
@@ -45,7 +45,7 @@ class AnotherInvalidActivity implements ActivityContract
      *
      * @return mixed
      */
-    public function getExtraProperty(string $propertyName)
+    public function getExtraProperty(string $propertyName): mixed
     {
         return Arr::get($this->properties->toArray(), $propertyName);
     }
@@ -73,10 +73,10 @@ class AnotherInvalidActivity implements ActivityContract
     /**
      * Scope a query to only include activities by a given causer.
      *
-     * @param  Builder  $query
-     * @param  Model  $causer
+     * @param \Illuminate\Database\Eloquent\Builder $query
+     * @param \Illuminate\Database\Eloquent\Model $causer
      *
-     * @return Builder
+     * @return \Illuminate\Database\Eloquent\Builder
      */
     public function scopeCausedBy(Builder $query, Model $causer): Builder
     {
@@ -88,10 +88,10 @@ class AnotherInvalidActivity implements ActivityContract
     /**
      * Scope a query to only include activities for a given subject.
      *
-     * @param  Builder  $query
-     * @param  Model  $subject
+     * @param \Illuminate\Database\Eloquent\Builder $query
+     * @param \Illuminate\Database\Eloquent\Model $subject
      *
-     * @return Builder
+     * @return \Illuminate\Database\Eloquent\Builder
      */
     public function scopeForSubject(Builder $query, Model $subject): Builder
     {
@@ -103,5 +103,10 @@ class AnotherInvalidActivity implements ActivityContract
     public function getCustomPropertyAttribute()
     {
         return $this->changes();
+    }
+
+    public function scopeForEvent(Builder $query, string $event): Builder
+    {
+        return $query->where('event', $event);
     }
 }

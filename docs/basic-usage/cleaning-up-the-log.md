@@ -22,6 +22,8 @@ protected function schedule(Schedule $schedule)
 }
 ```
 
+If you want to automatically cleanup your `production` system you should append the `--force` option as the command will otherwise ask you to confirm the action. This is to prevent accidental data loss.
+
 ## Define the log to clean
 
 If you want to clean just one log you can define it as command argument. It will filter the `log_name` attribute of the `Activity` model.
@@ -37,3 +39,18 @@ You can define the days to keep for each call as command option. This will overw
 ```bash
 php artisan activitylog:clean --days=7
 ```
+
+## MySQL - Rebuild index & get back space after clean.
+
+After clean, you might experience database table size still allocated more than actual lines in table,
+execute this line in MySQL to OPTIMIZE / ANALYZE table.
+
+```bash
+OPTIMIZE TABLE activity_log;
+```
+OR
+```bash
+ANALYZE TABLE activity_log;
+```
+
+*this SQL operation will lock write/read of database, use ONLY when server under maintanance mode.

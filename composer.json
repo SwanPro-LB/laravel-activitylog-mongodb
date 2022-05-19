@@ -1,19 +1,14 @@
 {
-    "name": "mostafamaklad/laravel-activitylog-mongodb",
+    "name": "spatie/laravel-activitylog",
     "description": "A very simple activity logger to monitor the users of your website or application",
+    "license": "MIT",
     "keywords": [
         "spatie",
         "log",
         "user",
         "activity",
-        "laravel",
-        "mongodb",
-        "laravel-mongodb",
-        "maklad",
-        "mostafamaklad"
+        "laravel"
     ],
-    "homepage": "https://github.com/mostafamaklad/laravel-activitylog-mongodb",
-    "license": "MIT",
     "authors": [
         {
             "name": "Freek Van der Herten",
@@ -32,36 +27,23 @@
             "email": "dev.gummibeer@gmail.com",
             "homepage": "https://gummibeer.de",
             "role": "Developer"
-        },
-        {
-            "name": "mostafamaklad",
-            "email": "dev.mostafa.maklad@gmail.com",
-            "homepage": "https://maklad.dev",
-            "role": "Developer"
         }
     ],
+    "homepage": "https://github.com/spatie/activitylog",
     "require": {
-        "php": "^7.2",
-        "illuminate/config": "^6.0 || ^7.0 || ^8.0",
-        "illuminate/database": "^6.0 || ^7.0 || ^8.0",
-        "illuminate/support": "^6.0 || ^7.0 || ^8.0",
-        "jenssegers/mongodb": "^3.6"
+        "php": "^8.0",
+        "illuminate/config": "^8.0 || ^9.0",
+        "illuminate/database": "^8.53 || ^9.0",
+        "illuminate/support": "^8.0 || ^9.0",
+        "spatie/laravel-package-tools": "^1.6.3"
     },
     "require-dev": {
         "ext-json": "*",
-        "orchestra/testbench": "^4.0 || ^5.0 || ^6.0",
-        "phpunit/phpunit": "^8.0 || ^9.0"
+        "orchestra/testbench": "^6.23 || ^7.0",
+        "pestphp/pest": "^1.20"
     },
-    "config": {
-        "sort-packages": true
-    },
-    "extra": {
-        "laravel": {
-            "providers": [
-                "Spatie\\Activitylog\\ActivitylogServiceProvider"
-            ]
-        }
-    },
+    "minimum-stability": "dev",
+    "prefer-stable": true,
     "autoload": {
         "psr-4": {
             "Spatie\\Activitylog\\": "src"
@@ -75,9 +57,17 @@
             "Spatie\\Activitylog\\Test\\": "tests"
         }
     },
-    "minimum-stability": "dev",
-    "prefer-stable": true,
+    "config": {
+        "sort-packages": true
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Spatie\\Activitylog\\ActivitylogServiceProvider"
+            ]
+        }
+    },
     "scripts": {
-        "test": "vendor/bin/phpunit"
+        "test": "vendor/bin/pest"
     }
 }

@@ -3,7 +3,7 @@
 namespace Spatie\Activitylog\Test\Models;
 
 use Illuminate\Contracts\Auth\Authenticatable;
-use Jenssegers\Mongodb\Eloquent\Model;
+use Illuminate\Database\Eloquent\Model;
 use Spatie\Activitylog\Traits\CausesActivity;
 
 class User extends Model implements Authenticatable
@@ -14,11 +14,11 @@ class User extends Model implements Authenticatable
 
     protected $guarded = [];
 
-    protected $fillable = ['_id', 'name'];
+    protected $fillable = ['id', 'name'];
 
     public function getAuthIdentifierName()
     {
-        return '_id';
+        return 'id';
     }
 
     public function getAuthIdentifier()

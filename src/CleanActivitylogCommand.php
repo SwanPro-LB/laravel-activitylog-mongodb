@@ -3,20 +3,27 @@
 namespace Spatie\Activitylog;
 
 use Carbon\Carbon;
-use DateTime;
 use Illuminate\Console\Command;
+use Illuminate\Console\ConfirmableTrait;
 use Jenssegers\Mongodb\Eloquent\Builder;
 
 class CleanActivitylogCommand extends Command
 {
+    use ConfirmableTrait;
+
     protected $signature = 'activitylog:clean
                             {log? : (optional) The log name that will be cleaned.}
-                            {--days= : (optional) Records older than this number of days will be cleaned.}';
+                            {--days= : (optional) Records older than this number of days will be cleaned.}
+                            {--force : (optional) Force the operation to run when in production.}';
 
     protected $description = 'Clean up old records from the activity log.';
 
     public function handle()
     {
+        if (! $this->confirmToProceed()) {
+            return 1;
+        }
+
         $this->comment('Cleaning activity log...');
 
         $log = $this->argument('log');
@@ -27,8 +34,8 @@ class CleanActivitylogCommand extends Command
 
         $activity = ActivitylogServiceProvider::getActivityModelInstance();
 
-
-        $amountDeleted = $activity::where('created_at', '<', new DateTime($cutOffDate))
+        $amountDeleted = $activity::query()
+            ->where('created_at', '<', $cutOffDate)
             ->when($log !== null, function (Builder $query) use ($log) {
                 $query->inLog($log);
             })
